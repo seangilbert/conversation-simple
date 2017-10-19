@@ -18,7 +18,9 @@
 
 var express = require('express'); // app server
 var bodyParser = require('body-parser'); // parser for post requests
-var Conversation = require('watson-developer-cloud/conversation/v1'); // watson sdk
+var Conversation = require('watson-developer-cloud/conversation/v1'); // watson
+
+var request = require('request');
 
 var app = express();
 
@@ -30,11 +32,37 @@ app.use(bodyParser.json());
 var conversation = new Conversation({
   // If unspecified here, the CONVERSATION_USERNAME and CONVERSATION_PASSWORD env properties will be checked
   // After that, the SDK will fall back to the bluemix-provided VCAP_SERVICES environment property
-  // username: '<username>',
-  // password: '<password>',
-  // url: 'https://gateway.watsonplatform.net/conversation/api',
-  version_date: Conversation.VERSION_DATE_2017_04_21
+  //'username': process.env.CONVERSATION_USERNAME,
+  //'password': process.env.CONVERSATION_PASSWORD,
+  'version_date': '2017-05-26'
 });
+
+const SHOP_ID = 'c6076b79dacf1d75412e1ecc2728dde4';
+const SHOP_TOKEN = 'c8be8f52ad633735d5ef934b1cd63ae8';
+const SHOP_NAME = 'sean-gilberts-store';
+const SHOP_API = '/admin/products.json';
+const SHOP_URI = `https://${SHOP_ID}:${SHOP_TOKEN}@${SHOP_NAME}.myshopify.com${SHOP_API}`;
+
+let shopResponse;
+function getShopResponse() {
+  console.log('getting shopResponse');
+  request(SHOP_URI, function (error, response, body) {
+    shopResponse = JSON.parse(body);
+
+  // console.log('error:', error); // Print the error if one occurred
+  // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+
+  // console.log(JSON.stringify(data));
+
+  });
+}
+
+getShopResponse();
+
+function postAd() {
+  console.log('posting shopResponse', shopResponse);
+}
+
 
 // Endpoint to be call from the client side
 app.post('/api/message', function(req, res) {
@@ -68,12 +96,29 @@ app.post('/api/message', function(req, res) {
  * @return {Object}          The response with the updated message
  */
 function updateMessage(input, response) {
+  // console.log(
+  //   '###############INPUT##############',
+  //   input,
+  //   '###############RESPONSE##############',
+  //   response,
+  //   '###############DONE##############'
+  // );
   var responseText = null;
   if (!response.output) {
-    response.output = {};
+    response.output = {text:''};
   } else {
+    if (input.context.get_ad) {
+      console.log(shopResponse.products[0].image.src);
+      const productName = shopResponse.products[0].title;
+      const productDesc = shopResponse.products[0].body_html;
+      const productImg = shopResponse.products[0].image.src;
+      response.output.text.push(`Found product: <strong>${productName}</strong>`);
+      response.output.text.push(`Description: <strong>${productDesc}</strong>`);
+      response.output.text.push(`<img src='${productImg}' style='max-width: 100px;'>`);
+    }
     return response;
   }
+
   if (response.intents && response.intents[0]) {
     var intent = response.intents[0];
     // Depending on the confidence of the response the app can return different messages.
@@ -89,8 +134,8 @@ function updateMessage(input, response) {
       responseText = 'I did not understand your intent';
     }
   }
-  response.output.text = responseText;
-  return response;
+  response.output.text.push(responseText);
+    return response;
 }
 
 module.exports = app;
