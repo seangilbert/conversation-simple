@@ -1,0 +1,52 @@
+// Marketing API
+// Lesson 4 - Creating Ad Sets
+
+var account_id = 'act_205076822892282'; // Replace with your account ID.
+var campaign_id = 6097896039219; // Replace with your campaign ID.
+
+log(campaign_id);
+
+if (campaign_id) {
+  FB.api(account_id + '/adsets', 'POST', {
+    name: 'Fridge AdSet',
+
+    bid_amount: '50',
+    daily_budget: '500',
+    billing_event: 'IMPRESSIONS',
+    optimization_goal: 'IMPRESSIONS',
+promoted_object: {
+        page_id:'358758881214334'
+      },
+
+    targeting: {
+      geo_locations: {
+        countries: ['US']
+      }
+    },
+
+    status: 'PAUSED',
+    campaign_id: campaign_id
+  });
+}
+
+// Marketing API
+// Lesson 5 - Creating Ads
+
+var account_id = 'act_205076822892282'; // Replace with your account ID.
+
+FB.api(account_id + '/adcreatives', 'POST', {
+  name: 'Fridge Candy Ad',
+  title: 'Fridge Candy Hat',
+  body: 'Check out this hat!',
+  image_url: 'https://cdn.shopify.com/s/files/1/2454/9167/products/IMG_1605.jpg?v=1508020436',
+  object_url: 'https://sean-gilberts-store.myshopify.com'
+});
+
+FB.api(account_id + '/ads', 'POST', {
+name: 'Fridge Candy Ad',
+adset_id: '6097904816019',
+status: 'PAUSED',
+creative: {
+  creative_id: '6097906156419'
+  }
+});
