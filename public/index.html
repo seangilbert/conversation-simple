@@ -9,6 +9,20 @@
   <meta property="og:description" content="Sample application that shows how to use the Conversation API to identify user intents" />
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="css/app.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script>
+    $(function() {
+      $('.input').bind("keydown", function(e){
+        if (e.keyCode == 13) {
+
+          $('.spinner').removeClass('paused').delay(1100).queue(function() {
+            $(this).addClass('paused').dequeue();
+          });
+        };
+      });
+    });
+
+  </script>
 </head>
 <body>
   <div id="view-change-button" class="button" onclick="PayloadPanel.togglePanel(event, this)">
@@ -18,18 +32,22 @@
   <div id="contentParent" class="responsive-columns-wrapper">
 
     <div id="chat-column-holder" class="responsive-column content-column">
-      <div class="loader">
-        <div class="spinner">
-          <div class="rect1"></div>
-          <div class="rect2"></div>
-          <div class="rect3"></div>
-          <div class="rect4"></div>
-          <div class="rect5"></div>
-        </div>
-      </div>
-      <!-- <div class="gradient-cover"></div> -->
-
       <div class="chat-column">
+        <div class="loader">
+          <!-- <div class="spinner paused">
+            <div class="rect1"></div>
+            <div class="rect2"></div>
+            <div class="rect3"></div>
+            <div class="rect4"></div>
+            <div class="rect5"></div>
+          </div> -->
+          <div class="spinner paused">
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+            <div class="bounce3"></div>
+          </div>
+        </div>
+        <!-- <div class="gradient-cover"></div> -->
         <div id="scrollingChat"></div>
         <label for="textInput" class="inputOutline">
           <input id="textInput" class="input responsive-column"

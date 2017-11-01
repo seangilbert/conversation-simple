@@ -160,6 +160,7 @@ app.post('/api/message', function(req, res) {
 
 
 function updateMessage(input, response) {
+
   if (response.context.campaign_name)
   console.log(
     // '###############INPUT##############',
@@ -177,7 +178,7 @@ function updateMessage(input, response) {
   } else {
     if (response.context.product_rank) {
       response.output.text.push(returnedProduct);
-      response.output.text.push(`<br />What can I help with next?`);
+      response.output.text.push(`Here's what I found. What can I help with next?`);
     }
 
 
