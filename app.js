@@ -33,7 +33,7 @@ const Campaign = FacebookAdsSdk.Campaign;
 const AdCreative = FacebookAdsSdk.AdCreative;
 const FacebookAdsApi = FacebookAdsSdk.FacebookAdsApi;
 
-const ACCESS_TOKEN = 'EAACUHflG6q4BAClzZCdX46yGxge7FtcffxOHg4xjW7kfwAiDSxR6ILBF5lTruyJbA1mXIRCX8CFikwpkcDwNe2YlDsOXFloZBDlnVyfPK60Ugvi0rddZBV1piMsg5MVtX8jbgPWpyp8CEZBdRRlwdeQycEyf9ZCQ9UZAG9kCiwoy52ifccdk5wcOHNoITFtcONAXx6277XAwZDZD';
+const ACCESS_TOKEN = 'EAACUHflG6q4BAFV4GgxA3W9YyKYVJkO1zUaq6OhbpH8Fz4dkIto6WwB6FD47ZCyNmId0gZCkKPvZAZAs1O5j7MKrnvjOc9P74i6UWzwCXTsDZBIqx999xee92hcfjOKHuxJ2Gm1WPOeQLSSJ55ynLgEjQasxrF2GqgZCmxqtzU1UU3Mp1eGkZAAIM2WnDgicCIgJWT4qXOTbgZDZD';
 
 const ACCOUNT_ID = 'act_205076822892282';
 const AD_SET_ID = '6097936212619';
@@ -44,14 +44,14 @@ const AD_STATUS = {
 
 const AD_DATA = {
   creative: {
-    name: 'Link Click Ad Creative',
-    title: 'Link Click Test Ad',
-    body: 'Here is some different text.',
+    name: 'Link Click Ad Creative', // CREATIVE NAME (NOT SURE WHERE THIS APPEARS?)
+    title: 'Link Click Test Ad', // NAME THE END USER WILL SEE
+    body: 'Here is some different text.', // AD COPY THE END USER WILL SEE
     image_url: 'https://cdn.shopify.com/s/files/1/2454/9167/products/IMG_1605.jpg?v=1508020436',
     object_url: 'https://sean-gilberts-store.myshopify.com'
   },
   ad: {
-    name: 'Here is my ad!',
+    name: 'Here is my ad!', // INTERNAL NAME
     adset_id: AD_SET_ID,
     status: AD_STATUS.PAUSED
   }
@@ -89,16 +89,37 @@ const SHOP_API = '/admin/products.json';
 const SHOP_URI = `https://${SHOP_ID}:${SHOP_TOKEN}@${SHOP_NAME}.myshopify.com${SHOP_API}`;
 
 
+let productName;
+let productDesc;
+let productImg;
+let productPrice;
+let productHandle;
+let returnedProduct;
 
 let shopResponse;
 function getShopResponse() {
   request(SHOP_URI, function (error, response, body) {
     shopResponse = JSON.parse(body);
-    console.log(body);
+
+    // console.log(shopResponse.products[0].variants[0].price);
+    productName = shopResponse.products[0].title;
+    productDesc = shopResponse.products[0].body_html;
+    productImg = shopResponse.products[0].image.src;
+    productPrice = shopResponse.products[0].variants[0].price;
+    productHandle = shopResponse.products[0].handle;
+
+    returnedProduct = `<div class="returned-content"><div class="returned-content-header">Sean's Store (Shopify)</div><div class="returned-content-body"><img src='${productImg}'><strong class="product-title">${productName}</strong>${productDesc}<strong>Price: $${productPrice}</strong></div></div>`;
+    // console.log(productImg, PRODUCT_HANDLE);
+    console.log(productDesc);
   });
 }
 
 getShopResponse()
+
+
+
+
+
 
 
 // Endpoint to be call from the client side
@@ -135,41 +156,37 @@ app.post('/api/message', function(req, res) {
 
 
 
+
+
+
 function updateMessage(input, response) {
+  if (response.context.campaign_name)
   console.log(
-    '###############INPUT##############',
-    input,
-    '###############RESPONSE##############',
-    response,
-    '###############DONE##############'
+    // '###############INPUT##############',
+    // input,
+    '############### CONTEXT CAMPAIGN_NAME ##############',
+    response.context.campaign_name,
+    '############### CONTEXT CAMPAIGN_NAME ##############'
   );
 
 
-// createAdSequence(ACCESS_TOKEN, ACCOUNT_ID, AD_DATA, DEBUG);
-
-
   var responseText = null;
+
   if (!response.output) {
     response.output = {text:''};
   } else {
     if (response.context.product_rank) {
-
-      console.log(shopResponse.products[0].variants[0].price);
-      const productName = shopResponse.products[0].title;
-      const productDesc = shopResponse.products[0].body_html;
-      const productImg = shopResponse.products[0].image.src;
-      const productPrice = shopResponse.products[0].variants[0].price;
-      const PRODUCT_HANDLE = shopResponse.products[0].handle;
-      // console.log(productImg, PRODUCT_HANDLE);
-
-      response.output.text.push(`<div class="returned-content"><img src='${productImg}'><strong class="product-title">${productName}</strong>${productDesc}<strong>Price: $${productPrice}</strong></div>`);
-      response.output.text.push(`What can I help with next?`);
+      response.output.text.push(returnedProduct);
+      response.output.text.push(`<br />What can I help with next?`);
     }
 
 
       if (response.context.publish_ad) {
         const adData = Object.assign({}, AD_DATA);
-        // adData.creative.name = 'blah';
+        adData.creative.name = response.context.campaign_name;
+        adData.creative.title = productName;
+        adData.creative.body = productDesc;
+        adData.ad.name = response.context.campaign_name;
         // adData.ad.name = 'yadda';
         createAdSequence(ACCESS_TOKEN, ACCOUNT_ID, adData, DEBUG);
         // createAdSequence(ACCESS_TOKEN, ACCOUNT_ID, AD_DATA, DEBUG);
